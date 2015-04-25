@@ -1,6 +1,7 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
+#include <stdexcept>
 
 enum HeapComp {MIN_HEAP, MAX_HEAP};
 
@@ -11,25 +12,37 @@ class heap {
     {
       comp = MAX_HEAP;
     }
-    heap(std::vector<T> vec, unsigned long count)
+    heap(std::vector<T> vec)
     {
-      initWithVector(vec, count, MAX_HEAP);
+      initWithVector(vec, MAX_HEAP);
     }
-    heap(std::vector<T> vec, unsigned long count, int heapComp)
+    heap(std::vector<T> vec, int heapComp)
     {
-      initWithVector(vec, count, heapComp);
+      initWithVector(vec, heapComp);
+    }
+    heap(heap<T> heap1, heap<T> heap2)
+    {
+      initWithTwoHeaps(heap1, heap2, MAX_HEAP);
+    }
+    heap(heap<T> heap1, heap<T> heap2, int heapComp)
+    {
+      initWithTwoHeaps(heap1, heap2, heapComp);
     }
     unsigned long size() const;
     void insert(T obj);
     bool isEmpty() const;
     T peek() const;
+    T pop();
+    void replace(T obj);
+    std::vector<T> getValues() const;
 
   private:
     std::vector<T> _v;
     int comp;
     void heapify();
     void siftDown(unsigned long start, unsigned long end);
-    void initWithVector(std::vector<T> vec, unsigned long count, int heapComp);
+    void initWithVector(std::vector<T> vec, int heapComp);
+    void initWithTwoHeaps(heap<T> heap1, heap<T> heap2, int heapComp);
 };
 
 
@@ -108,11 +121,48 @@ void heap<T>::siftDown(unsigned long start, unsigned long end)
 }
 
 template <class T>
-void heap<T>::initWithVector(std::vector<T> vec, unsigned long count, int heapComp)
+void heap<T>::initWithVector(std::vector<T> vec, int heapComp)
 {
     comp = heapComp;
-    for (unsigned long i = 0; i < count; i++)
-    {
-      insert(vec[i]);
-    }
+    _v.insert(_v.end(), vec.begin(), vec.end());
+    heapify();
 }
+
+template <class T>
+T heap<T>::pop()
+{
+  if (isEmpty())
+  {
+    throw std::logic_error("No elements to pop from heap");
+  }
+  T popped = peek();
+  _v.erase(_v.begin());
+  heapify();
+  return popped;
+}
+
+template <class T>
+void heap<T>::replace(T obj)
+{
+  _v.erase(_v.begin());
+  insert(obj);
+}
+
+template <class T>
+void heap<T>::initWithTwoHeaps(heap<T> heap1, heap<T> heap2, int heapComp)
+{
+  comp = heapComp;
+  std::vector<T> heap1Values = heap1.getValues();
+  std::vector<T> heap2Values = heap2.getValues();
+  _v.insert(_v.end(), heap1Values.begin(), heap1Values.end());
+  _v.insert(_v.end(), heap1Values.begin(), heap2Values.end());
+  heapify();
+}
+
+template <class T>
+std::vector<T> heap<T>::getValues() const
+{
+  std::vector<T> values(_v);
+  return values;
+}
+
