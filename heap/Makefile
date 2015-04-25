@@ -71,9 +71,12 @@ gtest_main.a : gtest-all.o gtest_main.o
 # gtest_main.a, depending on whether it defines its own main()
 # function.
 
+heap_test_data.o : $(TESTS)/heap_test_data.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(TESTS)/heap_test_data.cpp
+
 heap_test.o : $(TESTS)/heap_test.cpp \
                      $(USER_DIR)/heap.h $(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I$(USER_DIR) -c $(TESTS)/heap_test.cpp
 
-heap_test : heap_test.o gtest_main.a
+heap_test : heap_test.o heap_test_data.o gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread -lm $^ -o $@
